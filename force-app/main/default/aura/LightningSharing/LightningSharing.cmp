@@ -1,160 +1,150 @@
+<aura:component controller="LightningSharing" implements="lightning:isUrlAddressable" >
+    <aura:attribute name="shares" type="object[]" />
+    <aura:attribute name="sObjectName" type="String" />
+    <aura:attribute name="recordName" type="String" />
+    <aura:attribute name="recordId" type="String" />
+    
+    <aura:attribute name="searchObject" type="String" default="group" />
+    <aura:attribute name="searchString" type="String" />
+    <aura:attribute name="selectedSharee" type="String" />
+    <aura:attribute name="selectedTab" type="String" default="current" />
 
-<aura:component controller="LightningSharing" implements="lightning:isUrlAddressable">
+    <!-- Boolean attributes-->
+    <aura:attribute name="isSearching" type="Boolean" default="false" />
+    <aura:attribute name="isWorking" type="Boolean" default="true" />
+    
+    <aura:attribute name="results" type="object[]" />
+    <aura:attribute name="perm" type="String" default="Read/Write" />
 
-	<aura:attribute name="shares" type="object[]" />
-	<aura:attribute name="sObjectName" type="String" />
-	<aura:attribute name="recordName" type="String" />
-	<aura:attribute name="recordId" type="String" />
-
-	<aura:attribute name="searchObject" type="String" default="group"/>
-	<aura:attribute name="searchString" type="String" />
-	<aura:attribute name="selectedSharee" type="String" />
-
-
-	<aura:attribute name="results" type="object[]" />
-	<aura:attribute name="perm" type="string" default="Read/Write"/>
-
-	<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
-	<aura:registerEvent name="handleCallbackError" type="c:handleCallbackError"/>
-	<c:LightningErrorHandler />
-	<aura:handler event="c:handleCallbackError" action="{!c.stopProp}" phase="bubble"  />
-
-	<lightning:navigation aura:id="navService" />
-
-	<!--icons at https://www.lightningdesignsystem.com/icons/ -->
-	<lightning:card title="{!v.sObjectName + ' : ' + v.recordName}" variant="base">
-		<aura:set attribute="actions">
-			<lightning:button onclick="{!c.navToRecord}"  label="Back" title="{!'Return to ' + v.recordName}" />
-		</aura:set>
-		<aura:set attribute="footer">
-			<!--footer markup-->
-		</aura:set>
-		<div class="slds-p-horizontal_medium">
-			<lightning:tabset>
-				<lightning:tab>
-					<aura:set attribute="label">View/Edit Current Permissions</aura:set>
-					<div class="sls-p-around--medium">
-						<table class="slds-table slds-table_bordered slds-no-row-hover slds-table_cell-buffer">
-							<thead>
-								<tr>
-									<th class="slds-text-heading_label" scope="col">
-										<div class="slds-truncate">User or Group</div>
-									</th>
-									<th class="slds-text-heading_label" scope="col">
-										<div class="slds-truncate">Type</div>
-									</th>
-									<th class="slds-text-heading_label" scope="col">
-										<div class="slds-truncate">Name</div>
-									</th>
-									<th class="slds-text-heading_label" scope="col">
-										<div class="slds-truncate">Access Level</div>
-									</th>
-									<th class="slds-text-heading_label" scope="col">
-										<div class="slds-truncate">Reason</div>
-									</th>
-									<th></th>
-								</tr>
-							</thead>
-							<tbody>
-								<aura:iteration items="{!v.shares}" var="share">
-									<tr class="slds-hint-parent">
-
-										<td data-label="User or Group">{!share.UserOrGroupType}</td>
-										<td data-label="Type">{!share.SubType}</td>
-										<td data-label="Name">
-											<a onclick="{!c.selectRecord}" id="{!share.UserOrGroupID}">
-												{!share.UserOrGroupName}
-											</a>
-										</td>
-										<td data-label="Access Level">
-											{!share.AccessLevel}
-
-										</td>
-										<td data-label="Reason">{!share.RowCause}</td>
-										<td>
-											<aura:if isTrue="{!share.RowCause=='Manual'}">
-												<a onclick="{!c.setRead}" id="{!share.UserOrGroupID}" class="slds-button slds-button_neutral">
-													Read
-												</a>
-												<a onclick="{!c.setReadWrite}" id="{!share.UserOrGroupID}" class="slds-button slds-button_neutral">
-													Read/Write
-												</a>
-												<a onclick="{!c.delete}" id="{!share.UserOrGroupID}" class="slds-button slds-button_neutral">
-													Delete
-												</a>
-											</aura:if>
-										</td>
-									</tr>
-								</aura:iteration>
-							</tbody>
-						</table>
-					</div>
-				</lightning:tab>
-				<lightning:tab>
-					<aura:set attribute="label">Add New Permission</aura:set>
-
-					<lightning:layout class="slds-box slds-theme_shade">
-						<lightning:layoutItem padding="around-small" flexibility="grow">
-							<lightning:select aura:id="searchPicklist" name="select1" label="Search" value="{!v.searchObject}">
-								<option value="group">Public Groups</option>
-								<option value="userrole">Roles</option>
-								<option value="user">Users</option>
-							</lightning:select>
-						</lightning:layoutItem>
-
-						<lightning:layoutItem padding="around-small" flexibility="grow">
-							<lightning:input aura:id="search" name="for" value="{!v.searchString}" label="For" type="search" onchange="{!c.search}" placeholder="type at least 3 characters to see results"
-							/>
-							<aura:if isTrue="{!v.results.length >= 199 }">
-								Your search found more than 200 results. Keep typing to make it more specific.
-							</aura:if>
-						</lightning:layoutItem>
-					</lightning:layout>
-
-
-					<aura:if isTrue="{!v.results.length > 0}">
-
-						<table class="slds-table slds-table_bordered slds-no-row-hover slds-table_cell-buffer slds-m-top_large">
-							<thead>
-								<tr>
-									<th class="slds-text-heading_label" scope="col">
-										<div class="slds-truncate">Name</div>
-									</th>
-									<th class="slds-text-heading_label" scope="col">
-										<div class="slds-truncate">Set Access Level</div>
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								<aura:iteration items="{!v.results}" var="result">
-									<tr class="slds-hint-parent">
-
-										<td data-label="Name">{!result.Name}
-											<aura:if isTrue="{!result.Type}">
-												({!result.Type})
-											</aura:if>
-										</td>
-										<td data-label="Level">
-											<a onclick="{!c.setRead}" id="{!result.Id}" class="slds-button slds-button_neutral">
-												Read
-											</a>
-											<a onclick="{!c.setReadWrite}" id="{!result.Id}" class="slds-button slds-button_neutral">
-												Read/Write
-											</a>
-										</td>
-									</tr>
-								</aura:iteration>
-							</tbody>
-						</table>
-					</aura:if>
-
-				</lightning:tab>
-
-
-			</lightning:tabset>
-		</div>
-	</lightning:card>
-
-
-
+    <aura:attribute name="options" type="List" default="[{'label':'Public Groups', 'value':'group'},{'label':'Roles','value':'userrole'},{'label':'Users','value':'user'}]" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <aura:registerEvent name="handleCallbackError" type="c:handleCallbackError" />
+    
+    <c:LightningErrorHandler />
+    
+    <aura:handler event="c:handleCallbackError" action="{!c.stopProp}" phase="bubble" />
+    
+    <lightning:notificationsLibrary aura:id="notiflib" />
+    <lightning:navigation aura:id="navService" />
+    
+    <lightning:card  variant="base">
+        <aura:set attribute="title">
+            {!v.sObjectName}&nbsp;:&nbsp;{!v.recordName}
+        </aura:set>
+    	<aura:set attribute="actions">
+            <lightning:button onclick="{!c.navToRecord}" label="Back" title="{!'Return to ' + v.recordName}" />
+        </aura:set>
+        
+        <div class="slds-p-horizontal_medium">
+        	<lightning:tabset selectedTabId="{!v.selectedTab}">
+            	<lightning:tab id="current">
+                    <aura:set attribute="label">{!$Label.c.ViewCurrentPermissions}</aura:set>
+                    <div class="slds-p-around_medium">
+                    	<table class="slds-table slds-table_bordered slds-no-row-hover slds-table_cell-buffer">
+                        	<thead>
+                            	<tr>
+                                	<th class="slds-text-heading_label" scope="col">
+                                    	<div class="slds-truncate">{!$Label.c.UserOrGroup}</div>
+                                    </th>
+                                	<th class="slds-text-heading_label" scope="col">
+                                    	<div class="slds-truncate">{!$Label.c.Type}</div>
+                                    </th>
+                                	<th class="slds-text-heading_label" scope="col">
+                                    	<div class="slds-truncate">{!$Label.c.Name}</div>
+                                    </th>
+                                	<th class="slds-text-heading_label" scope="col">
+                                    	<div class="slds-truncate">{!$Label.c.AccessLevel}</div>
+                                    </th>
+                                	<th class="slds-text-heading_label" scope="col">
+                                    	<div class="slds-truncate">{!$Label.c.Reason}</div>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:if isTrue="{!v.isWorking}">
+                                    <lightning:spinner alternativeText="{!$Label.c.Working_PleaseWait}" />
+                                </aura:if>
+                            	<aura:iteration items="{!v.shares}" var="share">
+                                	<tr class="slds-hint-parent">
+                                    	<td data-label="User or Group">{!share.UserOrGroupType}</td>
+                                        <td data-label="Type">{!share.SubType}</td>
+                                        <td data-label="Name">
+                                        	<a onclick="{!c.navToUser}" id="{!share.UserOrGroupID}">
+                                            	{!share.UserOrGroupName}
+                                            </a>
+                                        </td>
+                                        <td data-label="Access Level">{!share.AccessLevel}</td>
+                                        <td data-label="Reason">{!share.RowCause}</td>
+                                        <td>
+                                        	<aura:if isTrue="{!share.RowCause=='Manual'}">
+                                                <a onclick="{!c.setRead}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Read'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">{!$Label.c.Read}</a>
+                                                <a onclick="{!c.setReadWrite}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Edit'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">{!$Label.c.ReadWrite}</a>
+                                                <a onclick="{!c.delete}" id="{!share.UserOrGroupID}" class="slds-button slds-button_neutral">{!$Label.c.Delete}</a>
+                                            </aura:if>
+                                        </td>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+                </lightning:tab>
+                <lightning:tab id="new">
+                	<aura:set attribute="label">{!$Label.c.AddNewPermission}</aura:set>
+                    <lightning:layout class="slds-box slds-theme_shade">
+                    	<lightning:layoutItem padding="around-small" flexibility="grow">
+                        	<lightning:combobox aura:id="searchPicklist" name="select1" label="{!$Label.c.Search}" value="{!v.searchObject}" options="{!v.options}" />
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem padding="around-small" flexibility="grow">
+                            <lightning:layout>
+                                <lightning:layoutItem size="10">
+                                        <div onkeyup="{!c.search}">
+                                            <lightning:input aura:id="search" name="for" value="{!v.searchString}" label="{!$Label.c.SearchFor}" type="search"  isLoading="{!v.isSearching}" placeholder="" />
+                                        </div>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="2" class="slds-align_absolute-center">
+                                        <lightning:button aura:id="b_Search" name="b_Search" label="{!$Label.c.Search}" onclick="{!c.handleSearchButtonClick}" />
+                                </lightning:layoutItem>
+                            </lightning:layout>
+                            <aura:if isTrue="{!v.results.length >= 199}">
+                            	{!$Label.c.TooManyResultsMessage}
+                            </aura:if>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                    
+                    <aura:if isTrue="{!v.results.length > 0}">
+                    	<table class="slds-table slds-table_bordered slds-no-row-hover slds-table_cell-buffer slds-m-top_large">
+                        	<thead>
+                            	<tr>
+                                    <th class="slds-text-heading_label" scope="col">
+                                    	<div class="slds-truncate">Name</div>
+                                    </th>
+                                    <th class="slds-text-heading_label" scope="col">
+                                    	<div class="slds-truncate">Set Access Level</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.results}" var="result">
+                                	<tr class="slds-hint-parent">
+                                    	<td data-label="Name">
+                                        	{!result.Name}
+                                            <aura:if isTrue="{!result.Type}">({!result.Type})</aura:if>
+                                        </td>
+                                        <td data-label="Level">
+                                        	<a onclick="{!c.setRead}" id="{!result.Id}" class="slds-button slds-button_neutral">{!$Label.c.Read}</a>
+                                            <a onclick="{!c.setReadWrite}" id="{!result.Id}" class="slds-button slds-button_neutral">{!$Label.c.ReadWrite}</a>
+                                        </td>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </aura:if>
+                </lightning:tab>
+            </lightning:tabset>
+        </div>
+    </lightning:card>
 </aura:component>
