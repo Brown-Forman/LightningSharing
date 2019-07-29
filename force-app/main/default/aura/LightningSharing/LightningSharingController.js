@@ -1,8 +1,11 @@
 ({
 	doInit : function(component, event, helper) {
-		let pageRef = component.get("v.pageReference");
-		component.set("v.recordId", pageRef.state.c__recordId);
+		//let pageRef = component.get("v.pageReference");
+		//component.set("v.recordId", pageRef.state.c__recordId);
 		helper.reload(component);
+
+		component.set("v.recordName", '');
+		component.set("v.sObjectName", '');
 
 		var action = component.get("c.sayMyName");
 		action.setParams({

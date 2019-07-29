@@ -1,4 +1,6 @@
-<aura:component controller="LightningSharing" implements="lightning:isUrlAddressable" >
+<aura:component controller="LightningSharing" implements="force:lightningQuickActionWithoutHeader,force:hasRecordId,lightning:isUrlAddressable" >
+    <ltng:require styles="{!$Resource.WideQuickActionCSS}" />
+    
     <aura:attribute name="shares" type="object[]" />
     <aura:attribute name="sObjectName" type="String" />
     <aura:attribute name="recordName" type="String" />
@@ -29,7 +31,7 @@
     <lightning:notificationsLibrary aura:id="notiflib" />
     <lightning:navigation aura:id="navService" />
     
-    <lightning:card  variant="base">
+    <lightning:card  variant="base" class="modal_container">
         <aura:set attribute="title">
             {!v.sObjectName}&nbsp;:&nbsp;{!v.recordName}
         </aura:set>
