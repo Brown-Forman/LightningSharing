@@ -82,9 +82,16 @@
                                         <td data-label="Reason">{!share.RowCause}</td>
                                         <td>
                                         	<aura:if isTrue="{!share.RowCause=='Manual'}">
-                                                <a onclick="{!c.setRead}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Read'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">{!$Label.c.Read}</a>
-                                                <a onclick="{!c.setReadWrite}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Edit'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">{!$Label.c.ReadWrite}</a>
-                                                <a onclick="{!c.delete}" id="{!share.UserOrGroupID}" class="slds-button slds-button_neutral">{!$Label.c.Delete}</a>
+                                                <aura:if isTrue="{!$Browser.isPhone}">
+                                                    <a onclick="{!c.setRead}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Read'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">R</a>
+                                                    <a onclick="{!c.setReadWrite}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Edit'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">R/W</a>
+                                                    <lightning:buttonIcon iconName="utility:delete" onclick="{!c.delete}" alternativeText="Delete"></lightning:buttonIcon>
+                                                <aura:set attribute="else">
+                                                    <a onclick="{!c.setRead}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Read'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">{!$Label.c.Read}</a>
+                                                    <a onclick="{!c.setReadWrite}" id="{!share.UserOrGroupID}" class="{!share.AccessLevel=='Edit'? 'slds-button slds-button_brand' : 'slds-button slds-button_neutral'}">{!$Label.c.ReadWrite}</a>
+                                                    <a onclick="{!c.delete}" id="{!share.UserOrGroupID}" class="slds-button slds-button_neutral">{!$Label.c.Delete}</a>
+                                                </aura:set>
+                                                </aura:if>
                                             </aura:if>
                                         </td>
                                     </tr>
